@@ -147,6 +147,7 @@ describe('the code sample', function () {
       schoolId: schoolId,
       schoolName: 'New School',
       studentId: studentId,
+      studentLastName: null,
       studentGrade: Math.round(Math.random() * 18) + 1,
     };
 

@@ -28,7 +28,7 @@ exports.handler = (event) => {
     Item: event
   };
 
-  const invalidProperties = validProperties.filter((prop) =>  !(prop in event) )
+  const invalidProperties = validProperties.filter((prop) =>  !event[prop] )
 
   if (invalidProperties.length > 0) throw new Error(`Invalid properties when attempting to save: ${invalidProperties.join(', ')}`)
 
