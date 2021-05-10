@@ -8,6 +8,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient({
 });
 
 const tableName = 'SchoolStudents';
+const validProperties = ['schoolId', 'schoolName', 'studentId', 'studentFirstName', 'studentLastName', 'studentGrade']
 
 /**
  * The entry point into the lambda
@@ -21,7 +22,16 @@ const tableName = 'SchoolStudents';
  * @param {string} event.studentGrade
  */
 exports.handler = (event) => {
-  // TODO validate that all expected attributes are present (assume they are all required)
-  // TODO use the AWS.DynamoDB.DocumentClient to save the 'SchoolStudent' record
-  // The 'SchoolStudents' table key is composed of schoolId (partition key) and studentId (range key).
+
+  const query = {
+    TableName: tableName,
+    Item: event
+  };
+
+  const invalidProperties = validProperties.filter((prop) =>  !(prop in event) )
+
+  if (invalidProperties.length > 0) throw new Error(`Invalid properties when attempting to save: ${invalidProperties.join(', ')}`)
+
+  return dynamodb.put(query).promise();
+
 };

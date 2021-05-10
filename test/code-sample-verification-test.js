@@ -37,8 +37,7 @@ describe('the code sample', function () {
     assert.deepEqual(queryResult[0], schoolStudent, 'Expected the query result to match what we saved');
   });
 
-  // TODO (extra credit) enable this test if you implement the GSI query in src/read-data.js
-  it.skip('(extra credit) can query for SchoolStudent records by studentLastName', async function () {
+  it('(extra credit) can query for SchoolStudent records by studentLastName', async function () {
     const schoolId = uuid();
     const studentId = uuid();
 
@@ -63,8 +62,7 @@ describe('the code sample', function () {
     assert.deepEqual(queryResult[0], schoolStudent, 'Expected the query result to match what we saved');
   });
 
-  // TODO uncomment this test if you implement retrieval of multiple pages of data
-  it.skip('returns all pages of data', async function () {
+  it('returns all pages of data', async function () {
     let createdRecords = 0;
     const schoolId = uuid();
     while (createdRecords++ < 10) {
@@ -86,6 +84,82 @@ describe('the code sample', function () {
     assert.equal(queryResult.length, 10, 'Expected to find ten results');
   });
 
+  it('can handle an ID and LastName', async function () {
+    const schoolId = uuid();
+    const studentId = uuid();
+    const studentLastName = 'Johnson'
+
+    const schoolStudent = {
+      schoolId: schoolId,
+      schoolName: 'Smith School',
+      studentId: studentId,
+      studentFirstName: 'Bob',
+      studentLastName: studentLastName,
+      studentGrade: Math.floor(Math.random() * 18 + 1).toString(),
+    };
+
+    await writeData.handler(schoolStudent);
+
+    const query = {
+      schoolId: schoolId,
+      studentId: studentId,
+      studentLastName: studentLastName
+    };
+    const queryResult = await readData.handler(query);
+
+    assert.isTrue(Array.isArray(queryResult), 'Expected queryResult to be of type Array');
+    assert.equal(queryResult.length, 1, 'Expected to find one result');
+    assert.deepEqual(queryResult[0], schoolStudent, 'Expected the query result to match what we saved');
+  });
+
+  it('can handle unexpected variables', async function () {
+    const schoolId = uuid();
+    const studentId = uuid();
+
+    const schoolStudent = {
+      schoolId: schoolId,
+      schoolName: 'New School',
+      studentId: studentId,
+      studentFirstName: 'Bob',
+      studentLastName: 'Barker',
+      studentGrade: Math.floor(Math.random() * 18 + 1).toString(),
+    };
+
+    await writeData.handler(schoolStudent);
+
+    const query = {
+      schoolId: schoolId,
+      studentId: studentId,
+      thisPropertyIsNotSearchAble: 'handlesFine'
+    };
+    const queryResult = await readData.handler(query);
+
+    assert.isTrue(Array.isArray(queryResult), 'Expected queryResult to be of type Array');
+    assert.equal(queryResult.length, 1, 'Expected to find one result');
+    assert.deepEqual(queryResult[0], schoolStudent, 'Expected the query result to match what we saved');
+  });
+
+  it('throws an error when missing a property', async function () {
+    const schoolId = uuid();
+    const studentId = uuid();
+
+    const schoolStudent = {
+      schoolId: schoolId,
+      schoolName: 'New School',
+      studentId: studentId,
+      studentGrade: Math.round(Math.random() * 18) + 1,
+    };
+
+    let err = null;
+    try {
+      await writeData.handler(schoolStudent);
+    } catch (error) {
+      err = error;
+    }
+
+    assert.equal(err.message, 'Invalid properties when attempting to save: studentFirstName, studentLastName');
+
+  });
 
   // This section starts the local DynamoDB database
   before(async function () {
